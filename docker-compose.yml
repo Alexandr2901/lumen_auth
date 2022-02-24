@@ -1,0 +1,58 @@
+version: '3.5'
+
+services:
+  lumen:
+    container_name: lumen-auth
+    ports:
+      - "8001:8000"
+    volumes:
+      - .:/var/www/html
+      - .:/src
+    #      - /var/www/html/vendor/
+    build: .
+    command: php -S lumen:8000 -t public
+    restart: always
+    networks:
+      - sail
+    depends_on:
+      - pgsql
+      - redis
+  pgsql:
+    container_name: auth-postgres
+    image: 'postgres:latest'
+    ports:
+      - '${FORWARD_DB_PORT:-5433}:5432'
+    environment:
+      PGPASSWORD: '${DB_PASSWORD}'
+      POSTGRES_DB: '${DB_DATABASE}'
+      POSTGRES_USER: '${DB_USERNAME}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD}'
+    volumes:
+      - 'auth-pgsql:/var/lib/postgresql/data'
+    networks:
+      - sail
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "${DB_DATABASE}", "-U", "${DB_USERNAME}" ]
+      retries: 3
+      timeout: 5s
+  redis:
+    container_name: auth-redis
+    image: 'redis:alpine'
+    ports:
+      - '${FORWARD_REDIS_PORT:-6380}:6379'
+    volumes:
+      - 'auth-redis:/data'
+    networks:
+      - sail
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      retries: 3
+      timeout: 5s
+networks:
+  sail:
+    driver: bridge
+volumes:
+  auth-pgsql:
+    driver: local
+  auth-redis:
+    driver: local
