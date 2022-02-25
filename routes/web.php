@@ -16,7 +16,7 @@
 use Laravel\Lumen\Routing\Router;
 
 $router->get('/', function () use ($router) {
-    return 42;
+    return 44;
 //    return \App\Models\User::all(); hello
 //    return $router->app->version(); hi lol
 });
