@@ -1,5 +1,5 @@
 FROM alpine:latest
-#8
+
 # for laravel lumen run smoothly
 RUN apk --no-cache add \
 php7 \
