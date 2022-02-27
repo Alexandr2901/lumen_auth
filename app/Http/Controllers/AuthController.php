@@ -54,6 +54,16 @@ class AuthController extends Controller
 
     }
 
+    public function check(Request $request)
+    {
+        $info = file_get_contents(
+            'http://lumen-main:8000/api/news?page=3&count=3'
+        );
+//        $info = json_decode($info, true);
+        return $info;
+//        return User::all();
+    }
+
     public function logOut(Request $request): bool
     {
         $request->user()->remember_token = null;
