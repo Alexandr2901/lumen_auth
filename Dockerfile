@@ -31,7 +31,7 @@ RUN php -r "copy('http://getcomposer.org/installer', 'composer-setup.php');" && 
 php composer-setup.php --install-dir=/usr/bin --filename=composer && \
 php -r "unlink('composer-setup.php');"
 
-# copy all of the file in folder to /src hi
+# copy all of the file in folder to /src h
 COPY . /src
 WORKDIR /src
 
