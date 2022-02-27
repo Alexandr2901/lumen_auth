@@ -6,7 +6,6 @@ use App\Contracts\Repositories\UserRepositoryContract;
 use App\Http\Requests\User\LoginRequest;
 use App\Http\Requests\User\StoreRequest;
 use App\Http\Resources\UserResource;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -22,51 +21,97 @@ class AuthController extends Controller
     public function store(StoreRequest $request)
     {
         $data = $request->validated();
-        $data['remember_token'] = hash('sha256', Str::random(60));
+        $data['refresh_token'] = Str::random(64);
         $user = $this->userRepository->create($data);
+//        $this->sendToken($user->id);
 
-        return response()->json(['data' => [
-            'user' => new UserResource($user),
-            'token' => $data['remember_token'],
-        ]
+        return response()->json([
+            'data' => [
+                'user' => new UserResource($user),
+                'refresh_token' => $data['refresh_token'],
+                'remember_token' => $this->sendToken($user->id),
+            ]
         ], 201);
+    }
+
+    private function sendToken(int $id)
+    {
+        $remember_token = Str::random(60);
+
+        $postdata = http_build_query(
+            array(
+                'id' => $id,
+                'remember_token' => $remember_token
+            )
+        );
+
+        $opts = array('http' =>
+            array(
+                'method'  => 'POST',
+                'header'  => 'Content-Type: application/x-www-form-urlencoded',
+                'content' => $postdata
+            )
+        );
+
+        $context  = stream_context_create($opts);
+
+        $result = file_get_contents('http://lumen-main:8000/api/auth/set-token',
+            false, $context);
+//        $info = file_get_contents(
+//            'http://lumen-main:8000/api/auth/set-token'
+//        );
+//        var_dump($result);
+        return $remember_token;
     }
 
     public function login(LoginRequest $request)
     {
-        $user = User::where('email', $request->input('email'))->first();
-
+        $user = $this->userRepository->getByEmail($request->input('email'));
         if ($user === null) {
             return response()->json(['error' => true, 'message' => "user not found!"], 401);
         }
-
         if (Hash::check($request->input('password'), $user->password)) {
-
-            $user->remember_token = hash('sha256', Str::random(60));
-
+            $user->refresh_token = Str::random(64);
             $user->save();
-
-            return response()->json(['data' => [
-                'success' => true, 'token' => $user->remember_token]], 200);
-
+            return response()->json([
+                'data' => [
+                    'success' => true,
+                    'refresh_token' => $user->refresh_token,
+                    'remember_token' => $this->sendToken($user->id),
+                ]
+            ]);
         }
         return response()->json(['error' => true, 'message' => "Invalid Credential"], 401);
-
     }
 
-    public function check(Request $request)
+//    public function check(Request $request)
+//    {
+//        $info = file_get_contents(
+//            'http://lumen-main:8000/api/news?page=3&count=3'
+//        );
+////        $info = json_decode($info, true);
+//        return $info;
+////        return User::all();
+//    }
+
+    public function loginRefreshToken(\App\Http\Requests\User\RefreshRequest $request)
     {
-        $info = file_get_contents(
-            'http://lumen-main:8000/api/news?page=3&count=3'
-        );
-//        $info = json_decode($info, true);
-        return $info;
-//        return User::all();
+        $user = $this->userRepository->getByRefreshToken($request->input('refresh_token'));
+        $user->refresh_token = Str::random(64);
+        $this->sendToken($user->id);
+
+        return response()->json([
+            'data' => [
+                'success' => true,
+                'refresh_token' => $user->refresh_token,
+                'remember_token' => $this->sendToken($user->id),
+            ]
+        ]);
     }
 
     public function logOut(Request $request): bool
     {
-        $request->user()->remember_token = null;
+        $request->user()->refresh_token = null;
         return $request->user()->save();
     }
 }

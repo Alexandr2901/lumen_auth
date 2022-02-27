@@ -15,8 +15,17 @@ class UserRepository extends BaseRepository implements UserRepositoryContract
 
     public function getAuthors(): Collection
     {
-
         return $this->model->has('news')->select('name', 'id')->get();
-
     }
+
+    public function getByRefreshToken(string $token): ?\App\Models\User
+    {
+        return $this->model->where('refresh_token', $token)->first();
+    }
+
+    public function getByEmail(string $email): ?\App\Models\User
+    {
+        return $this->model->where('email', $email)->first();
+    }
+
 }
