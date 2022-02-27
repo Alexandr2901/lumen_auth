@@ -26,7 +26,6 @@ php7-phar \
 php7-xml \
 php7-xmlwriter
 
-
 # if need composer to update plugin / vendor used
 RUN php -r "copy('http://getcomposer.org/installer', 'composer-setup.php');" && \
 php composer-setup.php --install-dir=/usr/bin --filename=composer && \
