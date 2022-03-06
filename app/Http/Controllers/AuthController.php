@@ -55,12 +55,12 @@ class AuthController extends Controller
 
         $context  = stream_context_create($opts);
 
-        $result = file_get_contents('http://lumen-main:8000/api/auth/set-token',
-            false, $context);
+//        $result = file_get_contents('http://lumen-main:8000/api/auth/set-token',
+            $result = file_get_contents('http://api-gateway:8080/api/auth/set-token',
+                false, $context);
 //        $info = file_get_contents(
 //            'http://lumen-main:8000/api/auth/set-token'
 //        );
-//        var_dump($result);
         return $remember_token;
     }
 
@@ -98,7 +98,7 @@ class AuthController extends Controller
     {
         $user = $this->userRepository->getByRefreshToken($request->input('refresh_token'));
         $user->refresh_token = Str::random(64);
-        $this->sendToken($user->id);
+//        $this->sendToken($user->id);
 
         return response()->json([
             'data' => [
