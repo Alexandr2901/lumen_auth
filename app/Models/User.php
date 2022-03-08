@@ -33,11 +33,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'refresh_token',
     ];
 
-    public function news()
-    {
-        return $this->belongsToMany(News::class);
-    }
-
     public function setPasswordAttribute(string $value)
     {
         $this->attributes["password"] = Hash::make($value);

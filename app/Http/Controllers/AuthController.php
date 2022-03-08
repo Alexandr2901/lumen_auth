@@ -6,6 +6,7 @@ use App\Contracts\Repositories\UserRepositoryContract;
 use App\Http\Requests\User\LoginRequest;
 use App\Http\Requests\User\StoreRequest;
 use App\Http\Resources\UserResource;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -58,9 +59,10 @@ class AuthController extends Controller
 //        $result = file_get_contents('http://lumen-main:8000/api/auth/set-token',
             $result = file_get_contents('http://api-gateway:8080/api/auth/set-token',
                 false, $context);
-//        $info = file_get_contents(
-//            'http://lumen-main:8000/api/auth/set-token'
-//        );
+            if (json_decode($result, true) !== $id) {
+                throw new Exception('error');
+
+            }
         return $remember_token;
     }
 
