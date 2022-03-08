@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Contracts\Repositories\UserRepositoryContract;
 use App\Http\Requests\User\LoginRequest;
+use App\Http\Requests\User\RefreshRequest;
 use App\Http\Requests\User\StoreRequest;
 use App\Http\Resources\UserResource;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -24,7 +24,6 @@ class AuthController extends Controller
         $data = $request->validated();
         $data['refresh_token'] = Str::random(64);
         $user = $this->userRepository->create($data);
-//        $this->sendToken($user->id);
 
         return response()->json([
             'data' => [
@@ -86,20 +85,11 @@ class AuthController extends Controller
         return response()->json(['error' => true, 'message' => "Invalid Credential"], 401);
     }
 
-//    public function check(Request $request)
-//    {
-//        $info = file_get_contents(
-//            'http://lumen-main:8000/api/news?page=3&count=3'
-//        );
-////        $info = json_decode($info, true);
-//        return $info;
-////        return User::all();
-//    }
-
-    public function loginRefreshToken(\App\Http\Requests\User\RefreshRequest $request)
+    public function loginRefreshToken(RefreshRequest $request)
     {
         $user = $this->userRepository->getByRefreshToken($request->input('refresh_token'));
         $user->refresh_token = Str::random(64);
+        $user->save();
 //        $this->sendToken($user->id);
 
         return response()->json([
@@ -111,9 +101,9 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logOut(Request $request): bool
-    {
-        $request->user()->refresh_token = null;
-        return $request->user()->save();
-    }
+//    public function logOut(Request $request): bool
+//    {
+//        $request->user()->refresh_token = null;
+//        return $request->user()->save();
+//    }
 }

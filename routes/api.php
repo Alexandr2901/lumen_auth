@@ -17,10 +17,11 @@
 
 $router->group(['prefix' => 'api'], function () use ($router) {
     $router->group(['prefix' => 'auth'], function () use ($router) {
-        $router->get('/check', 'AuthController@check');
+//        $router->get('/check', 'AuthController@check');
         $router->post('/login', 'AuthController@login');
         $router->post('/', 'AuthController@store');
-        $router->post('/logout', ['middleware' => 'auth', 'uses' => 'AuthController@logOut']);
+        $router->post('/refresh', 'AuthController@loginRefreshToken');
+//        $router->post('/logout', ['middleware' => 'auth', 'uses' => 'AuthController@logOut']);
     });
 
     $router->group(['prefix' => 'user'], function () use ($router) {

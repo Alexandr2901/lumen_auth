@@ -3,6 +3,7 @@
 namespace Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Str;
 use Laravel\Lumen\Testing\DatabaseTransactions;
 use TestCase;
 
@@ -30,6 +31,24 @@ class AuthControllerTest extends TestCase
         ]);
     }
 
+    public function testRefreshSuccess()
+    {
+        $user = User::factory()->create();
+        $user->refresh_token = Str::random(64);
+        $user->save();
+
+        $this->post('/api/auth/refresh', [
+            'refresh_token' => $user->refresh_token,
+        ]);
+        $this->seeJsonStructure([
+            'data' => [
+                'success',
+                'refresh_token',
+                'remember_token',
+            ]
+        ]);
+    }
+
     public function testLogOutSuccess()
     {
         $user = User::factory()->create();
@@ -41,7 +60,7 @@ class AuthControllerTest extends TestCase
     {
         $this->post('/api/auth', [
             'name' => 'required|string',
-            'email' => 'example1@mail.com',
+            'email' => 'example32@mail.com',
             'password' => 'password',
         ]);
 
